@@ -3,16 +3,18 @@ import numpy as np
 from imutils import paths
 import imutils
 import matplotlib.pyplot as plt
+import sys
+from PIL import Image
 
-
-# In[2]:
+n = len(sys.argv) 
+print("Total arguments passed:", n) 
+  
+# Arguments passed 
+print("\nFileName: ", sys.argv[1]) 
 
 
 def variance_of_laplacian(image):
     return cv2.Laplacian(image, cv2.CV_64F).var()
-
-
-# In[22]:
 
 
 def detect_blur_fft(image, size=60, thresh=10, vis=False):
@@ -50,18 +52,31 @@ def detect_blur_fft(image, size=60, thresh=10, vis=False):
 
 threshold_fft = 10
 vis_fft = False
-image_name = "3.jpg"
+image_name = sys.argv[1]#"3.jpg"
 threshold_lap = 10
+img = Image.open(image_name)
+imgOrig_copy = img.copy()
+tick = Image.open("tick.png")
+cross = Image.open("wrong.png")
+
+
 orig = cv2.imread(image_name)
 orig = imutils.resize(orig, width=500)
 gray = cv2.cvtColor(orig, cv2.COLOR_BGR2GRAY)
 (mean, blurry) = detect_blur_fft(gray, size=60,thresh=threshold_fft, vis=vis_fft)
-
 image = np.dstack([gray] * 3)
 if blurry:
-    color = (0, 0, 255)  
+    color = (0, 0, 255)
+    cross_copy = cross.copy()
+    imgOrig_copy.paste(cross_copy, (0, 0))
+    imgOrig_copy.save('01_edited.png',"PNG") 
+    imgOrig_copy.show()
 else: 
     (0, 255, 0)
+    tick_copy = tick.copy()
+    imgOrig_copy.paste(tick_copy, (0, 0))
+    imgOrig_copy.save('01_edited.png',"PNG") 
+    imgOrig_copy.show()
 text = "FFT - Blurry ({:.4f})" if blurry else "FFT - Not Blurry ({:.4f})"
 text = text.format(mean)
 #cv2.putText(image, text, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7,color, 2)
@@ -83,6 +98,5 @@ if fm < threshold_lap:
 text_2 = text_2.format(fm)
 print("[INFO] {}".format(text_2))
 #cv2.destroyAllWindows()
-
 
 
